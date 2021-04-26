@@ -1,11 +1,13 @@
 import time
 import pyupbit
 import datetime
+import requests
+access = "xMHfyvYODFxy70JlgEa1NsF4tgoc1LLXcoAt3xXL"
+secret = "h7KpRORRx9j2KyOSwyrUBwCXwrC9ixdUeWtgPo8o"
 
 access = "xMHfyvYODFxy70JlgEa1NsF4tgoc1LLXcoAt3xXL"
 secret = "h7KpRORRx9j2KyOSwyrUBwCXwrC9ixdUeWtgPo8o"
-import requests
-
+myToken = "xoxb-2005003311860-1998840760514-gOLn9V1q9tsVcFsuCknktkod"
 
 def post_message(token, channel, text):
     response = requests.post("https://slack.com/api/chat.postMessage",
@@ -13,9 +15,7 @@ def post_message(token, channel, text):
                              data={"channel": channel, "text": text}
                              )
     print(response)
-
-
-myToken = "xoxb-2005003311860-1998840760514-gOLn9V1q9tsVcFsuCknktkod"
+    
 
 post_message(myToken, "#w", "jocoding")
 
@@ -53,21 +53,21 @@ post_message(myToken,"#crypto", "autotrade start")
 while True:
     try:
         now = datetime.datetime.now()
-        start_time = get_start_time("KRW-DAWN")
+        start_time = get_start_time("KRW-MED")
         end_time = start_time + datetime.timedelta(days=1)
 
         if start_time < now < end_time - datetime.timedelta(seconds=30):
-            target_price = get_target_price("KRW-DAWN", 0.28)
-            current_price = get_current_price("KRW-DAWN")
+            target_price = get_target_price("KRW-MED", 0.65)
+            current_price = get_current_price("KRW-MED")
             if target_price < current_price:
                 krw = get_balance("KRW")
                 if krw > 5000:
-                    upbit.buy_market_order("KRW-DAWN", krw*0.9995)
+                    upbit.buy_market_order("KRW-MED", krw*0.9995)
                     post_message(myToken, "#w", " buy : " + str(buy_result))
         else:
-            btc = get_balance("DAWN")
+            btc = get_balance("MED")
             if btc > 0.00008:
-                upbit.sell_market_order("KRW-DAWN", btc*0.9995)
+                upbit.sell_market_order("KRW-MED", btc*0.9995)
                 post_message(myToken, "#w", " buy : " + str(sell_result))
         time.sleep(1)
     except Exception as e:
