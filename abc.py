@@ -1,23 +1,27 @@
 import time
 import pyupbit
 import datetime
-import requests
-access = "xMHfyvYODFxy70JlgEa1NsF4tgoc1LLXcoAt3xXL"
-secret = "h7KpRORRx9j2KyOSwyrUBwCXwrC9ixdUeWtgPo8o"
+import pandas as pd
+import numpy as np
+import numpy
+
 
 access = "xMHfyvYODFxy70JlgEa1NsF4tgoc1LLXcoAt3xXL"
 secret = "h7KpRORRx9j2KyOSwyrUBwCXwrC9ixdUeWtgPo8o"
-myToken = "xoxb-2005003311860-1998840760514-gOLn9V1q9tsVcFsuCknktkod"
+import requests
+
 
 def post_message(token, channel, text):
     response = requests.post("https://slack.com/api/chat.postMessage",
-                             headers={"Authorization": "Bearer " + token},
-                             data={"channel": channel, "text": text}
-                             )
+        headers={"Authorization": "Bearer "+token},
+        data={"channel": channel,"text": text}
+    )
     print(response)
-    
 
-post_message(myToken, "#w", "jocoding")
+
+myToken = "xoxb-2005003311860-1998347017317-FAezi2ZWJhopifatXMP6k5LJ"
+
+post_message(myToken,"#qqq", "시작")
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
@@ -45,6 +49,8 @@ def get_current_price(ticker):
     """현재가 조회"""
     return pyupbit.get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
+
+
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
@@ -53,24 +59,61 @@ post_message(myToken,"#crypto", "autotrade start")
 while True:
     try:
         now = datetime.datetime.now()
-        start_time = get_start_time("KRW-MED")
+        start_time = get_start_time("KRW-XRP")
         end_time = start_time + datetime.timedelta(days=1)
 
+        url = "https://api.upbit.com/v1/candles/minutes/5"
+
+        querystring = {"market": "KRW-XRP", "count": "100"}
+
+        response = requests.request("GET", url, params=querystring)
+
+        data = response.json()
+
+        df = pd.DataFrame(data)
+
+        df = df['trade_price'].iloc[::-1]
         if start_time < now < end_time - datetime.timedelta(seconds=30):
-            target_price = get_target_price("KRW-MED", 0.65)
-            current_price = get_current_price("KRW-MED")
-            if target_price < current_price:
+            target_price = get_target_price("KRW-XRP", 0.4)
+            #이동평균선
+            ma5 = df.rolling(window=5).mean()
+            ma20 = df.rolling(window=20).mean()
+            #볼린저밴드
+            unit = 2
+            band1 = unit * numpy.std(df[len(df) - 20:len(df)])
+            bb_center = numpy.mean(df[len(df) - 20:len(df)])
+            band_high = bb_center + band1
+            band_low = bb_center - band1
+            ma5 = np.round(ma5.iloc[-1], 1)
+            ma20 = np.round(ma20.iloc[-1], 1)
+            band_high = np.round(band_high,1)
+            band_low = np.round(band_low,1)
+            current_price = get_current_price("KRW-XRP")
+
+
+            if ((current_price > target_price) & (current_price > ma5) & (current_price > ma20))\
+                    | ((current_price > target_price) & (current_price > ma5) & (current_price > band_high))\
+                    | ((current_price > target_price) & (current_price > ma20) & (current_price > band_high)):
                 krw = get_balance("KRW")
                 if krw > 5000:
-                    upbit.buy_market_order("KRW-MED", krw*0.9995)
-                    post_message(myToken, "#w", " buy : " + str(buy_result))
+                    buy_result = upbit.buy_market_order("KRW-XRP", krw*0.9995)
+                    post_message(myToken, "#qqq", " 구매 : " + str(buy_result))
+            else:
+                btc1 = get_balance("XRP")
+                if (btc1 > 5.0) & (((current_price < ma5) & (current_price < ma20) & (current_price < band_low))\
+                        |((current_price < buy_result) & (current_price < ma20) & (current_price < band_low))\
+                        |((current_price < ma5) & (current_price < buy_result) & (current_price < band_low))\
+                        |((current_price < ma5) & (current_price < ma20) & (current_price < buy_result))):
+                    sell_result = upbit.sell_market_order("KRW-XRP", btc1 * 0.9995)
+                    post_message(myToken, "#qqq", " 판매 : " + str(sell_result))
+            time.sleep(1)
         else:
-            btc = get_balance("MED")
-            if btc > 0.00008:
-                upbit.sell_market_order("KRW-MED", btc*0.9995)
-                post_message(myToken, "#w", " buy : " + str(sell_result))
+            btc = get_balance("XRP")
+            if btc > 5.0:
+                sell_result = upbit.sell_market_order("KRW-XRP", btc*0.9995)
+                post_message(myToken, "#qqq", " 판매 : " + str(sell_result))
         time.sleep(1)
     except Exception as e:
         print(e)
-        post_message(myToken, "#w", e)
+        post_message(myToken, "#qqq", e)
         time.sleep(1)
