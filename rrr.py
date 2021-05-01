@@ -8,7 +8,7 @@ import requests
 
 access = "xMHfyvYODFxy70JlgEa1NsF4tgoc1LLXcoAt3xXL"
 secret = "h7KpRORRx9j2KyOSwyrUBwCXwrC9ixdUeWtgPo8o"
-mytoken = "xoxb-2005003311860-1998347017317-dNe7DQiB01PnfmEDC27MvS7h"
+mytoken = "xoxb-2005003311860-1998347017317-3peCfbOZ7Cweo5LXK5i7ysJh"
 
 A="XRP"
 A1="KRW-XRP"
