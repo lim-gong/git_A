@@ -8,36 +8,19 @@ import requests
 
 access = "xMHfyvYODFxy70JlgEa1NsF4tgoc1LLXcoAt3xXL"
 secret = "h7KpRORRx9j2KyOSwyrUBwCXwrC9ixdUeWtgPo8o"
-mytoken = "xoxb-2005003311860-1998840760514-WdUSGdlHxM78NJYisMo0G4nw"
-A="XRP"
-A1="KRW-XRP"
-B="EOS"
-B1="KRW-EOS"
-C="VET"
-C1="KRW-VET"
-D="XEM"
-D1="KRW-XEM"
-E="EDR"
-E1="KRW-EDR"
-AA="QTCON"
-AA1="KRW-QTCON"
-BB="LAMB"
-BB1="KRW-LAMB"
-CC="FCT2"
-CC1="KRW-FCT2"
-DD="CBK"
-DD1="KRW-CBK"
-EE="SRM"
-EE1="KRW-SRM"
-AAA="TON"
-AAA1"KRW-TON"
-Z=[A,B,C,D,E,AA,BB,CC,DD,EE,AAA]
-X=[A1,B1,C1,D1,E1,AA1,BB1,CC1,DD1,EE1,AAA1]
+mytoken = "xoxb-2005003311860-1998347017317-7bMNi2eYjYWHt1oa07M8gfah"
+
+X=['KRW-MTL', 'KRW-XRP', 'KRW-ETC', 'KRW-OMG', 'KRW-SNT', 'KRW-WAVES', 'KRW-XEM', 'KRW-QTUM', 'KRW-LSK', 'KRW-STEEM', 'KRW-XLM', 'KRW-ARDR', 'KRW-KMD', 'KRW-ARK', 'KRW-STORJ', 'KRW-GRS', 'KRW-REP', 'KRW-EMC2', 'KRW-ADA', 'KRW-SBD', 'KRW-POWR', 'KRW-ICX', 'KRW-EOS', 'KRW-TRX', 'KRW-SC', 'KRW-IGNIS', 'KRW-ONT', 'KRW-ZIL', 'KRW-POLY', 'KRW-ZRX', 'KRW-LOOM', 'KRW-ADX', 'KRW-BAT', 'KRW-IOST', 'KRW-DMT', 'KRW-RFR', 'KRW-CVC', 'KRW-IQ', 'KRW-IOTA', 'KRW-MFT', 'KRW-ONG', 'KRW-GAS', 'KRW-UPP', 'KRW-ELF', 'KRW-KNC', 'KRW-THETA', 'KRW-EDR', 'KRW-QKC', 'KRW-BTT', 'KRW-MOC', 'KRW-ENJ', 'KRW-TFUEL', 'KRW-MANA', 'KRW-ANKR', 'KRW-AERGO', 'KRW-ATOM', 'KRW-TT', 'KRW-CRE', 'KRW-SOLVE', 'KRW-MBL', 'KRW-TSHP', 'KRW-WAXP', 'KRW-HBAR', 'KRW-MED', 'KRW-MLK', 'KRW-STPT', 'KRW-ORBS', 'KRW-VET', 'KRW-CHZ', 'KRW-PXL', 'KRW-STMX', 'KRW-DKA', 'KRW-HIVE', 'KRW-KAVA', 'KRW-AHT', 'KRW-LINK', 'KRW-XTZ', 'KRW-BORA', 'KRW-JST', 'KRW-CRO', 'KRW-TON', 'KRW-SXP', 'KRW-LAMB', 'KRW-HUNT', 'KRW-MARO', 'KRW-PLA', 'KRW-DOT', 'KRW-SRM', 'KRW-MVL', 'KRW-PCI', 'KRW-STRAX', 'KRW-AQT', 'KRW-BCHA', 'KRW-GLM', 'KRW-QTCON', 'KRW-SSX', 'KRW-META', 'KRW-OBSR', 'KRW-FCT2', 'KRW-LBC', 'KRW-CBK', 'KRW-SAND', 'KRW-HUM', 'KRW-DOGE', 'KRW-STRK', 'KRW-PUNDIX', 'KRW-FLOW', 'KRW-DAWN', 'KRW-AXS', 'KRW-STX']
+Z=[]
+for i in X:
+    Y=i.replace("KRW-","")
+    Z.append(Y)
+
 i=1
 buy_result20 = 0
 buy_result09 = 0
+buy_result10 = 0
 qwe=0
-asd=1
 buy=0
 
 def post_message(token, channel, text):
@@ -87,6 +70,9 @@ def get_current_price(ticker):
 
 
 
+start_time = get_start_time(X[i])
+end_time = start_time + datetime.timedelta(seconds=10)
+
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
@@ -96,30 +82,28 @@ print("autotrade start")
 
 while True:
     try:
+
         krw = get_balance("KRW")
         zxc = time.strftime('%H', time.localtime(time.time()))
         if krw > 5000:
             i+=1
-        if i == 12:
+        if i == 11:
             i=0
         if zxc != qwe:
             post_message(mytoken, "#qqq", "작동중")
             qwe=zxc
-
-        now = datetime.datetime.now()
-        start_time = get_start_time(X[i])
-        end_time = start_time + datetime.timedelta(days=1)
-
         url = "https://api.upbit.com/v1/candles/minutes/5"
-
+        now = datetime.datetime.now()
         querystring = {"market": X[i], "count": "100"}
         response = requests.request("GET", url, params=querystring)
         data = response.json()
         df = pd.DataFrame(data)
         df = df['trade_price'].iloc[::-1]
-        if start_time < now < end_time - datetime.timedelta(seconds=30):
-            target_price = get_target_price(X[i], 0.4)
-            taraet_pric= get_target_pric(X[i], 0.45)
+
+        if True!= (start_time < now < end_time):
+
+            target_price = get_target_price(X[i], 0.35)
+            taraet_pric= get_target_pric(X[i], 0.35)
 
 
             #이동평균선
@@ -131,43 +115,50 @@ while True:
             bb_center = numpy.mean(df[len(df) - 20:len(df)])
             band_high = bb_center + band1
             band_low = bb_center - band1
-            ma5 = np.round(ma5.iloc[-1], 1)
-            ma20 = np.round(ma20.iloc[-1], 1)
             band_high = np.round(band_high,1)
             band_low = np.round(band_low,1)
             current_price = get_current_price(X[i])
+            test1 = ma5.iloc[-2] - ma20.iloc[-2]
+            test2 = ma5.iloc[-1] - ma20.iloc[-1]
+            ma5 = np.round(ma5.iloc[-1], 1)
+            ma20 = np.round(ma20.iloc[-1], 1)
+            print(X[i])
+            print(test1)
+            print(test2)
 
-            if ((current_price > target_price) & (current_price > ma5) & (current_price > ma20))\
-                    | ((current_price > target_price) & (current_price > band_high))\
-                    | ((current_price < taraet_pric) & (current_price < ma5))\
-                    | ((current_price < taraet_pric) & (current_price < ma20)):
+            if (((current_price > target_price) & (current_price > ma5) & (current_price > ma20))\
+                    | ((current_price > target_price) & (test1<0) & (test2>0))) & (1000.0 < current_price < 15000.0):
                 if krw > 5000.0:
-                    buy_result = upbit.buy_market_order(X[i], krw)
+                    buy_result = upbit.buy_market_order(X[i],krw*0.9995)
                     #구매가
+                    print("3")
                     buy = current_price
-                    asd=2
-                    buy_result20 = buy * 1.031
+                    buy_result20 = buy * 1.029
                     buy_result09 = buy * 0.985
+                    buy_result10 = buy * 1.01
+                    start_time = datetime.datetime.now() + datetime.timedelta(hours=2)
+                    end_time = datetime.datetime.now() + datetime.timedelta(hours=2, seconds=10)
 
             else:
                 btc = get_balance(Z[i])
                 if btc == None:
                     btc = 0
 
-                if (btc > 5.0) & (((current_price < ma5) & (current_price < ma20) & (current_price < band_low))\
+                if (btc > 4.0) & (((current_price < ma5) & (current_price < ma20) & (current_price < band_low))\
                                    |(current_price > buy_result20)|(current_price < buy_result09)):
-                    sell_result = upbit.sell_market_order(X[i], btc)
-                    asd=1
+                    sell_result = upbit.sell_market_order(X[i], btc*1.0)
 
             time.sleep(1)
         else:
             btc = get_balance(Z[i])
+            current_price = get_current_price(X[i])
             if btc == None:
                 btc = 0
-
-            if (btc > 5.0) & (buy<current_price):
-                sell_result = upbit.sell_market_order(X[i], btc)
-                asd=1
+            if (btc > 4.0) & (buy_result10<current_price):
+                sell_result = upbit.sell_market_order(X[i], btc*1.0)
+            else:
+                start_time +=  datetime.timedelta(minutes=30)
+                end_time += datetime.timedelta(minutes=30, seconds=10)
 
         time.sleep(1)
 
