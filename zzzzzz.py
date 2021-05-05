@@ -5,11 +5,25 @@ import pandas as pd
 import numpy as np
 import numpy
 import requests
+import pybithumb
 
 access = "xMHfyvYODFxy70JlgEa1NsF4tgoc1LLXcoAt3xXL"
 secret = "h7KpRORRx9j2KyOSwyrUBwCXwrC9ixdUeWtgPo8o"
-myToken = "xoxb-2005003311860-1998347017317-FAezi2ZWJhopifatXMP6k5LJ"
+mytoken = "xoxb-2005003311860-1998347017317-c1Fnw9rGr2GOGQIBFbcpViqc"
 
+X=['KRW-MTL', 'KRW-XRP', 'KRW-ETC', 'KRW-OMG', 'KRW-SNT', 'KRW-WAVES', 'KRW-XEM', 'KRW-QTUM', 'KRW-LSK', 'KRW-STEEM', 'KRW-XLM', 'KRW-ARDR', 'KRW-KMD', 'KRW-ARK', 'KRW-STORJ', 'KRW-GRS', 'KRW-REP', 'KRW-EMC2', 'KRW-ADA', 'KRW-SBD', 'KRW-POWR', 'KRW-ICX', 'KRW-EOS', 'KRW-TRX', 'KRW-SC', 'KRW-IGNIS', 'KRW-ONT', 'KRW-ZIL', 'KRW-POLY', 'KRW-ZRX', 'KRW-LOOM', 'KRW-ADX', 'KRW-BAT', 'KRW-IOST', 'KRW-DMT', 'KRW-RFR', 'KRW-CVC', 'KRW-IQ', 'KRW-IOTA', 'KRW-MFT', 'KRW-ONG', 'KRW-GAS', 'KRW-UPP', 'KRW-ELF', 'KRW-KNC', 'KRW-THETA', 'KRW-EDR', 'KRW-QKC', 'KRW-BTT', 'KRW-MOC', 'KRW-ENJ', 'KRW-TFUEL', 'KRW-MANA', 'KRW-ANKR', 'KRW-AERGO', 'KRW-ATOM', 'KRW-TT', 'KRW-CRE', 'KRW-SOLVE', 'KRW-MBL', 'KRW-TSHP', 'KRW-WAXP', 'KRW-HBAR', 'KRW-MED', 'KRW-MLK', 'KRW-STPT', 'KRW-ORBS', 'KRW-VET', 'KRW-CHZ', 'KRW-PXL', 'KRW-STMX', 'KRW-DKA', 'KRW-HIVE', 'KRW-KAVA', 'KRW-AHT', 'KRW-LINK', 'KRW-XTZ', 'KRW-BORA', 'KRW-JST', 'KRW-CRO', 'KRW-TON', 'KRW-SXP', 'KRW-LAMB', 'KRW-HUNT', 'KRW-MARO', 'KRW-PLA', 'KRW-DOT', 'KRW-SRM', 'KRW-MVL', 'KRW-PCI', 'KRW-STRAX', 'KRW-AQT', 'KRW-BCHA', 'KRW-GLM', 'KRW-QTCON', 'KRW-SSX', 'KRW-META', 'KRW-OBSR', 'KRW-FCT2', 'KRW-LBC', 'KRW-CBK', 'KRW-SAND', 'KRW-HUM', 'KRW-DOGE', 'KRW-STRK', 'KRW-PUNDIX', 'KRW-FLOW', 'KRW-DAWN', 'KRW-AXS', 'KRW-STX']
+Z=[]
+for i in X:
+    Y=i.replace("KRW-","")
+    Z.append(Y)
+
+i=1
+buy_result20 = 0
+buy_result09 = 0
+buy_result10 = 0
+qwe=0
+buy=0
+btc=0
 
 def post_message(token, channel, text):
     response = requests.post("https://slack.com/api/chat.postMessage",
@@ -21,13 +35,26 @@ def post_message(token, channel, text):
 
 
 
-post_message(myToken,"#qqq", "시작")
+post_message(mytoken,"#qqq", "시작")
+
+def get_yesterday_ma5(ticker):
+    df = pybithumb.get_ohlcv(ticker)
+    close = df['close']
+    ma = close.rolling(5).mean()
+    return ma[-2]
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
     df = pyupbit.get_ohlcv(ticker, interval="day", count=2)
     target_price = df.iloc[0]['close'] + (df.iloc[0]['high'] - df.iloc[0]['low']) * k
     return target_price
+
+def get_target_pric(ticker, k):
+    """변동성 돌파 전략으로 매수 목표가 조회"""
+    df = pyupbit.get_ohlcv(ticker, interval="day", count=2)
+    target_pric = df.iloc[0]['close'] + (df.iloc[0]['low'] - df.iloc[0]['high']) * k
+    return target_pric
+
 
 def get_start_time(ticker):
     """시작 시간 조회"""
@@ -51,74 +78,101 @@ def get_current_price(ticker):
 
 
 
+start_time = get_start_time(X[i])
+end_time = start_time + datetime.timedelta(seconds=10)
+
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
-post_message(myToken,"#qqq", "autotrade start")
+
 # 자동매매 시작
+
+
 while True:
     try:
-        now = datetime.datetime.now()
-        start_time = get_start_time("KRW-VET")
-        end_time = start_time + datetime.timedelta(days=1)
 
+        krw = get_balance("KRW")
+        zxc = time.strftime('%H', time.localtime(time.time()))
+        if krw > 5000:
+            i+=1
+        if i == 111:
+            i=0
+        if zxc != qwe:
+            post_message(mytoken, "#qqq", "작동중")
+            qwe=zxc
         url = "https://api.upbit.com/v1/candles/minutes/5"
-
-        querystring = {"market": "KRW-VET", "count": "100"}
+        now = datetime.datetime.now()
+        querystring = {"market": X[i], "count": "100"}
         response = requests.request("GET", url, params=querystring)
         data = response.json()
         df = pd.DataFrame(data)
         df = df['trade_price'].iloc[::-1]
 
-        querystring1 = {"market": "KRW-VET", "count": "100"}
-        response1 = requests.request("GET", url, params=querystring)
-        data1 = response.json()
-        df1 = pd.DataFrame(data)
-        df1 = df1['trade_price'].iloc[::-1]
+        if True!= (start_time < now < end_time):
 
-        if start_time < now < end_time - datetime.timedelta(seconds=30):
-            target_price = get_target_price("KRW-VET", 0.2)
+            target_price = get_target_price(X[i], 0.35)
+            taraet_pric= get_target_pric(X[i], 0.35)
+
+
             #이동평균선
-            ma5 = df.rolling(window=5).mean()
-            ma20 = df.rolling(window=20).mean()
-
+            ma5 = df.rolling(window=9).mean()
+            ma20 = df.rolling(window=26).mean()
             #볼린저밴드
             unit = 2
             band1 = unit * numpy.std(df[len(df) - 20:len(df)])
             bb_center = numpy.mean(df[len(df) - 20:len(df)])
             band_high = bb_center + band1
             band_low = bb_center - band1
-            ma5 = np.round(ma5.iloc[-1], 1)
-            ma20 = np.round(ma20.iloc[-1], 1)
             band_high = np.round(band_high,1)
             band_low = np.round(band_low,1)
-            current_price = get_current_price("KRW-VET")
+            current_price = get_current_price(X[i])
+            ma5 = np.round(ma5.iloc[-1], 2)
+            ma20 = np.round(ma20.iloc[-1], 2)
+            ma1 = get_yesterday_ma5(Z[i])
 
-            if ((current_price > target_price) & (current_price > ma5) & (current_price > ma20))\
-                    | ((current_price > target_price) & (current_price > ma5) & (current_price > band_high))\
-                    | ((current_price > target_price) & (current_price > ma20) & (current_price > band_high)):
-                krw = get_balance("KRW")
-                if krw > 5000:
-                    buy_result = upbit.buy_market_order("KRW-VET", krw*0.9995)
-                    post_message(myToken, "#qqq", " 구매 : " + str(buy_result))
+            if ((current_price > target_price) & (current_price > ma1) &(current_price > ma5)) & (1000.0 < current_price < 15000.0):
+                if krw > 5000.0:
+                    buy_result = upbit.buy_market_order(X[i],krw*0.9995)
+                    #구매가
+                    print("3")
+                    buy = current_price
+                    buy_result20 = buy * 1.025
+                    buy_result09 = buy * 0.9
+                    buy_result10 = buy * 1.01
+                    start_time = datetime.datetime.now() + datetime.timedelta(hours=1)
+                    end_time = datetime.datetime.now() + datetime.timedelta(hours=1, seconds=10)
+
+                else:
+                    btc = get_balance(Z[i])
+                    if btc == None:
+                        btc = 0
+
+                    if (btc > 4.0) & (((current_price < ma5) & (current_price < ma20) & (current_price < band_low)) \
+                                      | (current_price > buy_result20) | (current_price < buy_result09)):
+                        sell_result = upbit.sell_market_order(X[i], btc * 1.0)
             else:
-                btc1 = get_balance("VET")
+                if btc == None:
+                    btc = 0
 
+                if (btc > 4.0) & (((current_price < ma5) & (current_price < ma20) & (current_price < band_low))\
+                                   |(current_price > buy_result20)|(current_price < buy_result09)):
+                    sell_result = upbit.sell_market_order(X[i], btc*1.0)
 
-                if (btc1 > 25.0) & (((current_price < ma5) & (current_price < band_low))\
-                        |((current_price < ma20) & (current_price < band_low))):
-                    sell_result = upbit.sell_market_order("KRW-VET", btc1 * 0.9995)
-                    post_message(myToken, "#qqq", " 판매 : " + str(sell_result))
             time.sleep(1)
         else:
-            btc = get_balance("VET")
+            btc = get_balance(Z[i])
+            current_price = get_current_price(X[i])
+            if btc == None:
+                btc = 0
+            if (btc > 4.0) & (buy_result10<current_price):
+                sell_result = upbit.sell_market_order(X[i], btc*1.0)
+            else:
+                start_time +=  datetime.timedelta(minutes=30)
+                end_time += datetime.timedelta(minutes=30, seconds=10)
 
-            if btc > 25.0:
-                sell_result = upbit.sell_market_order("KRW-VET", btc*0.9995)
-                post_message(myToken, "#qqq", " 판매 : " + str(sell_result))
         time.sleep(1)
 
     except Exception as e:
         print(e)
-        post_message(myToken, "#qqq", e)
+        post_message(mytoken, "#qqq", e)
         time.sleep(1)
